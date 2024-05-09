@@ -1,0 +1,28 @@
+const TypographyVariant = [
+  'sj1',
+  'sj2',
+  'sj3',
+  'sj4',
+  'j1',
+  'j2',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  's1',
+  's2',
+  's3',
+  's4',
+  'b1',
+  'b2',
+  'b3',
+  'c1',
+  'c2',
+  'l1',
+  'l2',
+  'p1',
+] as const;
+
+export type TypographyVariant = (typeof TypographyVariant)[number];

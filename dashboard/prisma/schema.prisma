@@ -1,0 +1,140 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model role {
+  id                      Int                      @id @default(autoincrement())
+  name                    String                   @unique
+  users                   users[]
+}
+
+model keywords {
+  id                      Int                      @id @default(autoincrement())
+  name                    String                   @unique
+  drafts                  draft[]
+  users                   users[]                  @relation("multiple_keywords")
+  faculty_id              Int
+
+  faculty                faculties                @relation(fields: [faculty_id], references: [id])
+
+}
+
+model draft {
+  id                       Int                       @id @default(autoincrement())
+  title                    String
+  description              String                   @db.Text
+  created_at               DateTime
+  supervisor_recomendationsId Int?                   @unique
+  status_id                Int
+
+  status                   status                   @relation(fields: [status_id], references: [id])
+
+  keywords                 keywords[]
+  proposal                 proposals?             
+  supervisor_recomendations supervisor_recomendations? 
+}
+
+model proposals {
+  id                        Int                      @id @default(autoincrement())
+  created_at                DateTime
+  group_id                  Int
+  student_id                  Int
+  supervisor_id             Int
+  draft_id                  Int       @unique
+  
+  student                   users                    @relation(fields: [student_id], references: [id], name: "student")
+  supervisor                users                    @relation(fields: [supervisor_id], references: [id], name: "supervisor")
+  group                     groups                   @relation(fields: [group_id], references: [id])
+  draft                     draft                    @relation(fields: [draft_id], references: [id])
+ 
+}
+
+model supervisor_recomendations {
+  id                      Int                      @id @default(autoincrement())
+  supervisor_id           Int
+  createdAt               DateTime                 @default(now())
+  draft_id                Int?                    @unique
+  selected_student_id     Int?
+
+  selected_student        users?                    @relation(fields: [selected_student_id], references: [id])
+  students                users[]                  @relation("students")
+  supervisor              users                    @relation(fields: [supervisor_id], references: [id], name: "supervisor")
+  draft                   draft?                   @relation(fields: [draft_id], references: [id])
+  groups                  groups[]                 @relation("recommendations")
+}
+
+model users {
+  id                      Int                      @id @default(autoincrement())
+  username                String                   @unique
+  name                    String
+  email                   String?                  @unique
+  role_id                 Int
+  password                String
+  created_at              DateTime
+  program                 String?
+  father_name             String?
+
+  keywords                keywords[]               @relation("multiple_keywords")
+
+  faculties            faculties[]              @relation("multiple_faculty")
+  majors                  majors[]                   @relation("multiple_major")
+  groups                  groups[]              @relation("students")
+  
+  selected_student        supervisor_recomendations[] 
+  group_supervisors       groups[]              @relation("supervisors")
+  studentProposals          proposals[]              @relation("student")
+  supervisedProposals     proposals[]              @relation("supervisor")
+  role                    role                     @relation(fields: [role_id], references: [id],onDelete: Cascade, onUpdate: Cascade)
+  supervisor_recomendations_supervisor supervisor_recomendations[] @relation("supervisor")
+  supervisor_recomendations_student supervisor_recomendations[] @relation("students")
+}
+
+
+
+model status {
+  id                      Int                      @id @default(autoincrement())
+  name                    String
+  type                    Int                       @default(1)
+  drafts                  draft[]
+  }
+
+
+
+model groups {
+  id                      Int                      @id @default(autoincrement())
+  name                    String
+  created_at              DateTime                @default(now())
+  major_id                Int
+  group_status            Boolean                 @default(false)
+  majors                  majors                @relation(fields: [major_id], references: [id])
+  students                   users[]            @relation("students")
+  supervisors                users[]            @relation("supervisors")
+  proposals               proposals[]
+  recommendations         supervisor_recomendations[] @relation("recommendations")
+  
+}
+
+model majors {
+  id                      Int                      @id @default(autoincrement())
+  name                    String                 @unique  
+  faculty_id              Int
+
+  faculty                 faculties                @relation(fields: [faculty_id], references: [id])
+  groups                  groups[]
+  users                   users[]                 @relation("multiple_major")
+}
+
+model faculties {
+  id                      Int                      @id @default(autoincrement())
+  name                    String                   @unique
+  majors                  majors[]
+  multiple_role_users             users[]                 @relation("multiple_faculty") 
+  keywords                keywords[]
+}
+
