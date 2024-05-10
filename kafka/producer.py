@@ -13,9 +13,7 @@ replication_factor = 1
 # Create AdminClient
 admin_client = AdminClient({'bootstrap.servers': bootstrap_servers})
 
-# Define topic configuration
 topic_config = {
-    # Optional: customize additional topic-level configurations
     'cleanup.policy': 'delete',
 }
 
