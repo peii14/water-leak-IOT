@@ -8,9 +8,17 @@ import pyspark
 from pyspark.sql.functions import udf
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
+from pyspark.sql.functions import pandas_udf, PandasUDFType
 
-model_path = '/spark/model/best_xgb.pkl'
-model = pickle.load(open(model_path, 'rb'))
+model_path = '/spark/model/best_model'
+import os
+
+if os.path.exists(model_path):
+    print("Model file found.")
+    model = xgb.Booster()
+    model.load_model(model_path)
+else:
+    print(f"Model file not found at {model_path}")
 
 schema = StructType([
     StructField("timestamp", StringType(), True),
@@ -117,7 +125,7 @@ df = df.select(from_json(col("value"), schema).alias("data"))
 df = df.select("data.*")
 
 # Load the XGBoost model
-model_path = '/spark/model/best_xgb.pkl'
+model_path = './spark/model/best_xgb.pkl'
 model = pickle.load(open(model_path, 'rb'))
 
 # Convert timestamp and numerical fields
@@ -146,75 +154,95 @@ numeric_fields = [
 for field in numeric_fields:
     df = df.withColumn(field, col(field).cast("double"))
 
-# Define the classification UDF
 
-
-def classify(features):
+@pandas_udf("string", PandasUDFType.SCALAR)
+def classify_batch(features: pd.DataFrame) -> pd.Series:
     try:
-        pandas_df = pd.DataFrame([features.asDict()])
-        pandas_df = pandas_df.drop('timestamp', axis=1)
-        pandas_df = pandas_df.apply(pd.to_numeric)
-        dmatrix = xgb.DMatrix(pandas_df)
-        prediction = model.predict(dmatrix)
-        return 'Anomaly' if prediction[0] == 1 else 'Normal'
+        features = features.drop(columns=["timestamp"], errors="ignore")
+        features = features.apply(pd.to_numeric, errors="coerce").fillna(0)
+
+        predictions = model.predict(features)
+
+        return pd.Series(["Anomaly" if pred == 1 else "Normal" for pred in predictions])
     except Exception as e:
-        print(f"Error in classify UDF: {e}")
-        return "Error"
+        print(f"Error in classify batch UDF: {e}")
+        return pd.Series(["Error"] * len(features))
+
+numeric_columns = [
+    'P1_FCV01D', 'P1_FCV01Z', 'P1_FCV02D', 'P1_FCV02Z',
+    'P1_FCV03D', 'P1_FCV03Z', 'P1_FT01', 'P1_FT01Z',
+    'P1_FT02', 'P1_FT02Z', 'P1_FT03', 'P1_FT03Z',
+    'P1_LCV01D', 'P1_LCV01Z', 'P1_LIT01',
+    'P1_PCV01D', 'P1_PCV01Z', 'P1_PCV02D', 'P1_PCV02Z',
+    'P1_PIT01', 'P1_PIT01_HH', 'P1_PIT02',
+    'P1_PP01AD', 'P1_PP01AR', 'P1_PP01BD', 'P1_PP01BR',
+    'P1_PP02D', 'P1_PP02R', 'P1_PP04', 'P1_PP04D', 'P1_PP04SP',
+    'P1_SOL01D', 'P1_SOL03D', 'P1_STSP',
+    'P1_TIT01', 'P1_TIT02', 'P1_TIT03',
+    'P2_24Vdc', 'P2_ATSW_Lamp', 'P2_AutoGO', 'P2_AutoSD', 'P2_Emerg',
+    'P2_MASW', 'P2_MASW_Lamp', 'P2_ManualGO', 'P2_ManualSD',
+    'P2_OnOff', 'P2_RTR', 'P2_SCO', 'P2_SCST', 'P2_SIT01',
+    'P2_TripEx', 'P2_VIBTR01', 'P2_VIBTR02', 'P2_VIBTR03', 'P2_VIBTR04',
+    'P2_VT01', 'P2_VTR01', 'P2_VTR02', 'P2_VTR03', 'P2_VTR04',
+    'P3_FIT01', 'P3_LCP01D', 'P3_LCV01D', 'P3_LH01',
+    'P3_LIT01', 'P3_LL01', 'P3_PIT01',
+    'P4_HT_FD', 'P4_HT_PO', 'P4_HT_PS',
+    'P4_LD', 'P4_ST_FD', 'P4_ST_GOV', 'P4_ST_LD',
+    'P4_ST_PO', 'P4_ST_PS', 'P4_ST_PT01', 'P4_ST_TT01',
+    'x1001_05_SETPOINT_OUT', 'x1001_15_ASSIGN_OUT',
+    'x1002_07_SETPOINT_OUT', 'x1002_08_SETPOINT_OUT',
+    'x1003_10_SETPOINT_OUT', 'x1003_18_SETPOINT_OUT', 'x1003_24_SUM_OUT'
+]
 
 
-classify_udf = udf(classify, StringType())
-# # Apply the classification model to the DataFrame
-result_df = df.withColumn("classification", classify_udf(
-    struct([df[x] for x in df.columns])))
-
-
+result_df = df.withColumn("classification", classify_batch(struct([df[x] for x in numeric_columns])))
 output_topic = 'classification'
 
 
-# query = result_df.writeStream \
-#     .outputMode("append") \
-#     .format("console") \
-#     .start()
+query = result_df.writeStream \
+    .outputMode("append") \
+    .format("console") \
+    .start()
 
 # query.awaitTermination()
 
 
-def write_to_influx(df, epoch_id):
-    # Code to create a connection to InfluxDB
-    # Convert iterator to DataFrame or use it as is
-    if df.rdd.isEmpty():
-        return
+# def write_to_influx(df, epoch_id):
+#     # Code to create a connection to InfluxDB
+#     # Convert iterator to DataFrame or use it as is
+#     if df.rdd.isEmpty():
+#         return
 
-    pandas_df = df.toPandas()
-    influxdb_url = "http://influxdb:8086"  # Adjust if needed
-    # Replace with your InfluxDB token
-    token = 'O8pkG8unGMgqaA7zUKNpbEuAWRhTCU0-sxAf-24Iz0QUrT-2g4XaUOlZq6XOKtlmxubT9n0QzBTY_gpb11SxMA=='
-    org = 'indonesia'  # Replace with your InfluxDB organization
-    bucket = 'bucket-wido'  # Replace with your InfluxDB bucket
+#     pandas_df = df.toPandas()
+#     influxdb_url = "http://influxdb:8086"  # Adjust if needed
+#     # Replace with your InfluxDB token
+#     token = 'FeerqBQF5LSSZUv5wRmbK_7O8rZCsL7OEgTIdGOYM-VeT2jqygd1_rSRcfKzqlxOLLWGx---1l6TaidJcKumPw=='
+#     org = 'indonesia'  # Replace with your InfluxDB organization
+#     bucket = 'bucket-wido'  # Replace with your InfluxDB bucket
 
-    # Establish a connection to InfluxDB
-    client = InfluxDBClient(url=influxdb_url, token=token, org=org)
-    write_api = client.write_api(write_options=SYNCHRONOUS)
+#     # Establish a connection to InfluxDB
+#     client = InfluxDBClient(url=influxdb_url, token=token, org=org)
+#     write_api = client.write_api(write_options=SYNCHRONOUS)
 
-    for index, row in pandas_df.iterrows():
-        # Replace with your measurement name
-        dataPoint = Point("classification")
+#     for index, row in pandas_df.iterrows():
+#         # Replace with your measurement name
+#         dataPoint = Point("classification")
 
-        # Add tags and fields from row
-        for key, value in row.items():
-            if key != "timestamp":
-                dataPoint.field(key, value)
+#         # Add tags and fields from row
+#         for key, value in row.items():
+#             if key != "timestamp":
+#                 dataPoint.field(key, value)
 
-        # Write data point to InfluxDB
-        write_api.write(bucket=bucket, record=dataPoint)
+#         # Write data point to InfluxDB
+#         write_api.write(bucket=bucket, record=dataPoint)
 
-    client.close()
+#     client.close()
 
 
-query = result_df.writeStream \
-    .foreachBatch(write_to_influx) \
-    .outputMode("update") \
-    .option("checkpointLocation", "/checkpoint") \
-    .start()
+# query = result_df.writeStream \
+#     .foreachBatch(write_to_influx) \
+#     .outputMode("update") \
+#     .option("checkpointLocation", "/checkpoint") \
+#     .start()
 
 query.awaitTermination()

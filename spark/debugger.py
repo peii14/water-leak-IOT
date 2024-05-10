@@ -110,7 +110,7 @@ df = df.select(from_json(col("value"), schema).alias("data"))
 df = df.select("data.*")
 
 # Load the XGBoost model
-model_path = '/spark/model/best_xgb.pkl'
+model_path = './model/best_xgb.pkl'
 model = pickle.load(open(model_path, 'rb'))
 
 # Print streaming data to console for debugging

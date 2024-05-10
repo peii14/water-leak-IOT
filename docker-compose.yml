@@ -9,7 +9,7 @@ services:
     ports:
       - 32181:32181
     networks:
-      - hai-security-network
+      - water-leak-detection-network
 
   kafkaManager:
     image: hlebalbau/kafka-manager:stable
@@ -19,7 +19,7 @@ services:
       ZK_HOSTS: "zookeeper:32181"
       APPLICATION_SECRET: "random-secret"
     networks:
-      - hai-security-network
+      - water-leak-detection-network
       
   kafka:
     image: confluentinc/cp-kafka:6.2.0
@@ -27,7 +27,7 @@ services:
     depends_on:
       - zookeeper
     networks:
-      - hai-security-network
+      - water-leak-detection-network
     ports:
       - 9092:9092
       - 30001:30001
@@ -57,10 +57,10 @@ services:
     ports:
         - 8080:8080
     networks:
-        - hai-security-network
+        - water-leak-detection-network
     volumes:
         - ./spark:/spark:rw
-        - ./model:/model:rw
+        # - ./model:/spark/model:rw
         - ./checkpoint:/checkpoint:rw
 
   influxdb:
@@ -78,7 +78,7 @@ services:
       - INFLUXDB_ADMIN_USER_PASSWORD=${ADMIN_PASSWORD}
       - INFLUXDB_ADMIN_USER_TOKEN=${AUTH_TOKEN}
     networks:
-      - hai-security-network
+      - water-leak-detection-network
 
   grafana:
     container_name: grafana
@@ -95,7 +95,7 @@ services:
     depends_on:
       - influxdb
     networks:
-      - hai-security-network
+      - water-leak-detection-network
 
   telegraf:
     container_name: telegraf
@@ -110,15 +110,14 @@ services:
     ports:
       - 8125:8125
     networks:
-      - hai-security-network
+      - water-leak-detection-network
     
 networks:
-  hai-security-network:
+  water-leak-detection-network:
     driver: bridge
 
 volumes:
   grafana-data:
-  chronograf-storage:
   influxdb-data:
  
 
