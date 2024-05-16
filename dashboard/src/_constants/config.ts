@@ -1,6 +1,6 @@
 export const siteConfig = {
-  title: 'My Thesis',
+  title: "Advance Software",
   description:
-    'my thesis is a platform that helps students to manage their thesis and help them to find a supervisor.',
-  url: 'https://my-thesis.com',
+    "Advance Software is a software development company that provides software solutions for your business needs.",
+  url: "https://gayuh-kautaman.com",
 };

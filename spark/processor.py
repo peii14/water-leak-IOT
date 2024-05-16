@@ -10,6 +10,7 @@ from pyspark.sql.functions import udf
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 from pyspark.sql.functions import pandas_udf, PandasUDFType
+import pymongo
 
 model_path = '/spark/model/best_model'
 import os
@@ -199,57 +200,127 @@ numeric_columns = [
 result_df = df.withColumn("classification", classify_batch(struct([df[x] for x in numeric_columns])))
 output_topic = 'classification'
 
-def print_ae():
-  print("ASU COK")
-
 
 # query = result_df.writeStream \
-#     .foreach(print_ae) \
 #     .outputMode("append") \
 #     .format("console") \
 #     .start()
 
 # query.awaitTermination()
 
-def write_to_influx(df, epoch_id):
-    try:
-        if df.rdd.isEmpty():
-            logging.info("DataFrame is empty. Nothing to write.")
-            return
 
-        pandas_df = df.toPandas()
-        influxdb_url = "http://influxdb:8086"
-        token = '3ftZXSzNSi-sWCZzCAniAURTlq7qhX3F9HnEJ49Pw1VDpylIEQ3NgFU_U98wkujI1EF2vdLssVKJGGctM3fbDQ=='
-        org = 'Smart Home Water Management System'
-        bucket = 'smart_home'
+def write_to_mongodb(df, epoch_id):
+    if df.rdd.isEmpty():
+        return
 
-        client = InfluxDBClient(url=influxdb_url, token=token, org=org)
-        write_api = client.write_api(write_options=SYNCHRONOUS)
+    pandas_df = df.toPandas()
+    mongodb_url = "mongodb://admin:admin@mongodb:27017" 
+    database = "water_treatment"  
+    collection = "classification" 
+    
+    client = pymongo.MongoClient(mongodb_url)
+    db = client[database]
+    coll = db[collection]
 
-        for index, row in pandas_df.iterrows():
-            data_point = Point("classification")
+    for index, row in pandas_df.iterrows():
+        document = {
+            "timestamp": row["timestamp"],
+            "classification": row["classification"],
+            "P1_FCV01D": row["P1_FCV01D"],
+            "P1_FCV01Z": row["P1_FCV01Z"],
+            "P1_FCV02D": row["P1_FCV02D"],
+            "P1_FCV02Z": row["P1_FCV02Z"],
+            "P1_FCV03D": row["P1_FCV03D"],
+            "P1_FCV03Z": row["P1_FCV03Z"],
+            "P1_FT01": row["P1_FT01"],
+            "P1_FT01Z": row["P1_FT01Z"],
+            "P1_FT02": row["P1_FT02"],
+            "P1_FT02Z": row["P1_FT02Z"],
+            "P1_FT03": row["P1_FT03"],
+            "P1_FT03Z": row["P1_FT03Z"],
+            "P1_LCV01D": row["P1_LCV01D"],
+            "P1_LCV01Z": row["P1_LCV01Z"],
+            "P1_LIT01": row["P1_LIT01"],
+            "P1_PCV01D": row["P1_PCV01D"],
+            "P1_PCV01Z": row["P1_PCV01Z"],
+            "P1_PCV02D": row["P1_PCV02D"],
+            "P1_PCV02Z": row["P1_PCV02Z"],
+            "P1_PIT01": row["P1_PIT01"],
+            "P1_PIT01_HH": row["P1_PIT01_HH"],
+            "P1_PIT02": row["P1_PIT02"],
+            "P1_PP01AD": row["P1_PP01AD"],
+            "P1_PP01AR": row["P1_PP01AR"],
+            "P1_PP01BD": row["P1_PP01BD"],
+            "P1_PP01BR": row["P1_PP01BR"],
+            "P1_PP02D": row["P1_PP02D"],
+            "P1_PP02R": row["P1_PP02R"],
+            "P1_PP04": row["P1_PP04"],
+            "P1_PP04D": row["P1_PP04D"],
+            "P1_PP04SP": row["P1_PP04SP"],
+            "P1_SOL01D": row["P1_SOL01D"],
+            "P1_SOL03D": row["P1_SOL03D"],
+            "P1_STSP": row["P1_STSP"],
+            "P1_TIT01": row["P1_TIT01"],
+            "P1_TIT02": row["P1_TIT02"],
+            "P1_TIT03": row["P1_TIT03"],
+            "P2_24Vdc": row["P2_24Vdc"],
+            "P2_ATSW_Lamp": row["P2_ATSW_Lamp"],
+            "P2_AutoGO": row["P2_AutoGO"],
+            "P2_AutoSD": row["P2_AutoSD"],
+            "P2_Emerg": row["P2_Emerg"],
+            "P2_MASW": row["P2_MASW"],
+            "P2_MASW_Lamp": row["P2_MASW_Lamp"],
+            "P2_ManualGO": row["P2_ManualGO"],
+            "P2_ManualSD": row["P2_ManualSD"],
+            "P2_OnOff": row["P2_OnOff"],
+            "P2_RTR": row["P2_RTR"],
+            "P2_SCO": row["P2_SCO"],
+            "P2_SCST": row["P2_SCST"],
+            "P2_SIT01": row["P2_SIT01"],
+            "P2_TripEx": row["P2_TripEx"],
+            "P2_VIBTR01": row["P2_VIBTR01"],
+            "P2_VIBTR02": row["P2_VIBTR02"],
+            "P2_VIBTR03": row["P2_VIBTR03"],
+            "P2_VIBTR04": row["P2_VIBTR04"],
+            "P2_VT01": row["P2_VT01"],
+            "P2_VTR01": row["P2_VTR01"],
+            "P2_VTR02": row["P2_VTR02"],
+            "P2_VTR03": row["P2_VTR03"],
+            "P2_VTR04": row["P2_VTR04"],
+            "P3_FIT01": row["P3_FIT01"],
+            "P3_LCP01D": row["P3_LCP01D"],
+            "P3_LCV01D": row["P3_LCV01D"],
+            "P3_LH01": row["P3_LH01"],
+            "P3_LIT01": row["P3_LIT01"],
+            "P3_LL01": row["P3_LL01"],
+            "P3_PIT01": row["P3_PIT01"],
+            "P4_HT_FD": row["P4_HT_FD"],
+            "P4_HT_PO": row["P4_HT_PO"],
+            "P4_HT_PS": row["P4_HT_PS"],
+            "P4_LD": row["P4_LD"],
+            "P4_ST_FD": row["P4_ST_FD"],
+            "P4_ST_GOV": row["P4_ST_GOV"],
+            "P4_ST_LD": row["P4_ST_LD"],
+            "P4_ST_PO": row["P4_ST_PO"],
+            "P4_ST_PS": row["P4_ST_PS"],
+            "P4_ST_PT01": row["P4_ST_PT01"],
+            "P4_ST_TT01": row["P4_ST_TT01"],
+            "x1001_05_SETPOINT_OUT": row["x1001_05_SETPOINT_OUT"],
+            "x1001_15_ASSIGN_OUT": row["x1001_15_ASSIGN_OUT"],
+            "x1002_07_SETPOINT_OUT": row["x1002_07_SETPOINT_OUT"],
+            "x1002_08_SETPOINT_OUT": row["x1002_08_SETPOINT_OUT"],
+            "x1003_10_SETPOINT_OUT": row["x1003_10_SETPOINT_OUT"],
+            "x1003_18_SETPOINT_OUT": row["x1003_18_SETPOINT_OUT"],
+            "x1003_24_SUM_OUT": row["x1003_24_SUM_OUT"]
+        }
 
-            # Add tags and fields from row
-            for key, value in row.items():
-                if key != "timestamp":
-                    data_point.field(key, value)
+        coll.insert_one(document)
 
-            # Write data point to InfluxDB
-            write_api.write(bucket=bucket, record=data_point)
+    client.close()
 
-        client.close()
-        logging.info("Data successfully written to InfluxDB.")
-    except Exception as e:
-        logging.error(f"Error writing data to InfluxDB: {e}")
-        raise
-
-# Set up logging
-logging.basicConfig(level=logging.INFO)
-
-# Your existing Spark Streaming code...
 
 query = result_df.writeStream \
-    .foreachBatch(write_to_influx) \
+    .foreachBatch(write_to_mongodb) \
     .outputMode("update") \
     .option("checkpointLocation", "/checkpoint") \
     .start()

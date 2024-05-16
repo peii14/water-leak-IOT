@@ -14,4 +14,5 @@ RUN pip install \
     numpy \
     pandas==1.5.3 \
     xgboost==1.5.1 \
-    pyspark
+    pyspark \
+    pymongo

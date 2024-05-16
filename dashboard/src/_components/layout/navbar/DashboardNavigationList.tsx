@@ -1,18 +1,18 @@
-'use client';
-import { Disclosure } from '@headlessui/react';
-import clsx from 'clsx';
-import { LucideIcon } from 'lucide-react';
-import { usePathname } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import { IconType } from 'react-icons';
-import { FiChevronDown } from 'react-icons/fi';
+"use client";
+import { Disclosure } from "@headlessui/react";
+import clsx from "clsx";
+import { LucideIcon } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { IconType } from "react-icons";
+import { FiChevronDown } from "react-icons/fi";
 
-import UnstyledLink from '@/_components/shared/links/UnstyledLink';
-import NextImage from '@/_components/shared/NextImage';
-import { NavigationList } from '@/_constants/NavigationList';
-import clsxm from '@/_lib/clsxm';
-import useAuthStore from '@/_store/useAuthStore';
-import { useItemStorage } from '@/_store/useSuperAdminStorage';
+import UnstyledLink from "@/_components/shared/links/UnstyledLink";
+import NextImage from "@/_components/shared/NextImage";
+import { NavigationList } from "@/_constants/NavigationList";
+import clsxm from "@/_lib/clsxm";
+import useAuthStore from "@/_store/useAuthStore";
+import { useItemStorage } from "@/_store/useSuperAdminStorage";
 
 export type Navigation = {
   name: string;
@@ -29,21 +29,18 @@ export type Navigation = {
   action?: () => void;
 };
 
-type NavigationProps = React.ComponentPropsWithoutRef<'nav'>;
+type NavigationProps = React.ComponentPropsWithoutRef<"nav">;
 
 export default function DashboardNavigationList({
   className,
   ...rest
 }: NavigationProps) {
-  const session = useSession();
-  const navigation = NavigationList({
-    role: session.data?.user.role.name ?? '',
-  });
+  const navigation = NavigationList();
   const logout = useAuthStore.useLogout();
 
   return (
     <nav className={clsxm(className)} {...rest}>
-      <div className='space-y-1.5'>
+      <div className="space-y-1.5">
         {navigation.map((nav) => {
           return nav.children ? (
             <NestedNavigation key={nav.name} navigation={nav} />
@@ -52,7 +49,7 @@ export default function DashboardNavigationList({
               activeState={nav.activeState}
               key={nav.name}
               navigation={nav}
-              action={nav.name == 'Logout' ? logout : nav.action}
+              action={nav.name == "Logout" ? logout : nav.action}
             />
           ) : (
             <NavigationLink key={nav.name} navigation={nav} />
@@ -89,49 +86,49 @@ function NestedNavigation({
   const storageValue = useItemStorage((state) => state.whichStorage);
 
   return (
-    <Disclosure as='div' defaultOpen={checkActive(navChildren.children)}>
+    <Disclosure as="div" defaultOpen={checkActive(navChildren.children)}>
       {({ open }) => (
-        <div className={`rounded-xl ${open ? 'md:bg-darkGreen' : ''}`}>
+        <div className={`rounded-xl ${open ? "md:bg-darkGreen" : ""}`}>
           <Disclosure.Button
             className={clsx(
-              'hover:bg-primary-400 hover:text-white ',
-              'text-typo-primary',
-              'group flex w-full items-center rounded-xl px-2 py-2 text-sm font-medium',
-              'focus-visible:ring-primary-500 focus-visible:ring-offset-primary-500 focus:outline-none focus-visible:ring-2',
-              'transition duration-100'
+              "hover:bg-primary-400 hover:text-white ",
+              "text-typo-primary",
+              "group flex w-full items-center rounded-xl px-2 py-2 text-sm font-medium",
+              "focus-visible:ring-primary-500 focus-visible:ring-offset-primary-500 focus:outline-none focus-visible:ring-2",
+              "transition duration-100"
             )}
           >
             {navChildren.avatar ? (
               <NextImage
-                className='mr-1.5 flex-shrink-0 overflow-hidden rounded-full'
+                className="mr-1.5 flex-shrink-0 overflow-hidden rounded-full"
                 quality={60}
                 src={navChildren.avatar}
-                alt='avatar'
+                alt="avatar"
                 width={35}
                 height={35}
               />
             ) : (
               <navChildren.icon
                 className={clsx(
-                  'mr-1.5 flex-shrink-0',
-                  'text-typo-secondary text-lg group-hover:text-white',
-                  open && 'mt-[1px] self-start'
+                  "mr-1.5 flex-shrink-0",
+                  "text-typo-secondary text-lg group-hover:text-white",
+                  open && "mt-[1px] self-start"
                 )}
-                aria-hidden='true'
+                aria-hidden="true"
               />
             )}
-            <span className={clsx('text-left', !open && 'truncate')}>
+            <span className={clsx("text-left", !open && "truncate")}>
               {navChildren.avatar ? auth.user?.name : navChildren.name}
             </span>
             <FiChevronDown
               className={clsx(
-                'flex-shrink-0',
-                'text-typo-icons ml-auto text-lg group-hover:text-white',
-                open && 'mt-[1px] rotate-180 self-start'
+                "flex-shrink-0",
+                "text-typo-icons ml-auto text-lg group-hover:text-white",
+                open && "mt-[1px] rotate-180 self-start"
               )}
             />
           </Disclosure.Button>
-          <Disclosure.Panel className='ml-5 mt-0.5'>
+          <Disclosure.Panel className="ml-5 mt-0.5">
             {navChildren.children?.map((nav) =>
               nav.children ? (
                 <NestedNavigation key={nav.name} navigation={nav} />
@@ -140,15 +137,15 @@ function NestedNavigation({
                   key={nav.name}
                   navigation={nav}
                   activeState={
-                    nav.name === 'Safari mas'
+                    nav.name === "Safari mas"
                       ? storageValue === 2
-                      : nav.name === 'Sinar Safari Motor'
+                      : nav.name === "Sinar Safari Motor"
                       ? storageValue === 1
-                      : nav.name === 'Warehouse'
+                      : nav.name === "Warehouse"
                       ? storageValue === 3
                       : false
                   }
-                  action={nav.name == 'Logout' ? logout : nav.action}
+                  action={nav.name == "Logout" ? logout : nav.action}
                 />
               ) : (
                 <NavigationLink key={nav.name} navigation={nav} />
@@ -178,25 +175,25 @@ function NavigationLink({
       href={navigation.href}
       className={clsxm(
         isActive
-          ? 'bg-primary-500 text-white'
-          : 'text-typo-primary hover:bg-primary-400 hover:text-white',
-        'group my-0.5 flex w-max items-center rounded-md px-2 py-2 text-sm font-medium',
-        'focus-visible:ring-offset-secondary-500 focus:outline-none focus-visible:ring-2  focus-visible:ring-green-500',
-        'transition duration-100',
+          ? "bg-primary-500 text-white"
+          : "text-typo-primary hover:bg-primary-400 hover:text-white",
+        "group my-0.5 flex w-max items-center rounded-md px-2 py-2 text-sm font-medium",
+        "focus-visible:ring-offset-secondary-500 focus:outline-none focus-visible:ring-2  focus-visible:ring-green-500",
+        "transition duration-100",
         className
       )}
-      aria-current={isActive ? 'page' : undefined}
+      aria-current={isActive ? "page" : undefined}
     >
       <navigation.icon
-        color={isActive ? 'white' : undefined}
+        color={isActive ? "white" : undefined}
         className={clsx(
-          'mr-1.5 flex-shrink-0',
-          'text-lg group-hover:text-white',
-          isActive ? 'text-white' : 'text-typo-darkGreen'
+          "mr-1.5 flex-shrink-0",
+          "text-lg group-hover:text-white",
+          isActive ? "text-white" : "text-typo-darkGreen"
         )}
-        aria-hidden='true'
+        aria-hidden="true"
       />
-      <span className='ml-3 truncate'>{navigation.name}</span>
+      <span className="ml-3 truncate">{navigation.name}</span>
     </UnstyledLink>
   );
 }
@@ -218,24 +215,24 @@ function NavigationAction({
       onClick={action}
       className={clsxm(
         activeState
-          ? 'text-darkGreen bg-primary-500'
-          : 'text-typo-primary hover:bg-primary-400 hover:text-white',
-        'group flex cursor-pointer items-center rounded-md px-2 py-2 text-sm font-medium',
-        'focus-visible:ring-offset-secondary-500 focus-visible:ring-darkGreen focus:outline-none  focus-visible:ring-2',
-        'transition duration-100',
+          ? "text-darkGreen bg-primary-500"
+          : "text-typo-primary hover:bg-primary-400 hover:text-white",
+        "group flex cursor-pointer items-center rounded-md px-2 py-2 text-sm font-medium",
+        "focus-visible:ring-offset-secondary-500 focus-visible:ring-darkGreen focus:outline-none  focus-visible:ring-2",
+        "transition duration-100",
         className
       )}
-      aria-current={activeState ? 'page' : undefined}
+      aria-current={activeState ? "page" : undefined}
     >
       <navigation.icon
         className={clsx(
-          'mr-1.5 flex-shrink-0',
-          'group-hover:text-dark-green text-lg',
-          activeState ? 'text-darkGreen' : 'text-typo-darkGreen'
+          "mr-1.5 flex-shrink-0",
+          "group-hover:text-dark-green text-lg",
+          activeState ? "text-darkGreen" : "text-typo-darkGreen"
         )}
-        aria-hidden='true'
+        aria-hidden="true"
       />
-      <span className='truncate'>{navigation.name}</span>
+      <span className="truncate">{navigation.name}</span>
     </div>
   );
 }
