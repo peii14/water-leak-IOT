@@ -5,7 +5,8 @@ import { useEffect } from 'react';
 
 import Typography from '@/_components/shared/Typography';
 import FacultyIcon from '@/_icons/Faculty';
-import FacultyAdminTable from '@/app/(univ-admin)/admin/sensor/_components/FacultyTable';
+import LimitForm from './_components/SensorForm';
+
 export default function FacultyAdminPage() {
   const session = useSession();
   const router = useRouter();
@@ -28,7 +29,7 @@ export default function FacultyAdminPage() {
         </Typography>
       </section>
       <section className='mt-5'>
-        {/* <FacultyAdminTable /> */}
+        <LimitForm />
       </section>
     </main>
   );

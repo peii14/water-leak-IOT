@@ -9,7 +9,8 @@ import {
 } from 'lucide-react';
 
 import { Navigation } from '@/_components/layout/navbar/DashboardNavigationList';
-import SensorIcon from '@/_icons/Faculty';
+import SensorIcon from '@/_icons/Sensor';
+import LightbulbIcon from '@/_icons/Lightbulb';
 import HomeIcon from '@/_icons/Home';
 import ProposalIcon from '@/_icons/Proposal';
 import RecommendationIcon from '@/_icons/Recommendation';
@@ -48,6 +49,11 @@ const AdminNavigation: Navigation[] = [
     name: 'Sensors',
     href: '/admin/sensor',
     icon: SensorIcon,
+  },
+  {
+    name: 'Tips',
+    href: '/admin/tips',
+    icon: LightbulbIcon,
   },
 ];
 

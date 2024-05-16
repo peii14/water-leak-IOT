@@ -1,4 +1,4 @@
-// File: /Users/yasabh/Downloads/KULIAH S2/Semester 2/Advanced Software Technology/projects/my-thesis/src/app/(univ-admin)/admin/layout.tsx
+// File: /Users/yasabh/water-leak-IOT/dashboard/src/app/(univ-admin)/admin/layout.tsx
 import * as entry from '../../../../../src/app/(univ-admin)/admin/layout.js'
 import type { ResolvingMetadata } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

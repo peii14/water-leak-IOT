@@ -5,6 +5,7 @@ import xgboost as xgb
 import pickle
 import pandas as pd
 import pyspark
+import logging
 from pyspark.sql.functions import udf
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
@@ -198,51 +199,59 @@ numeric_columns = [
 result_df = df.withColumn("classification", classify_batch(struct([df[x] for x in numeric_columns])))
 output_topic = 'classification'
 
-
-query = result_df.writeStream \
-    .outputMode("append") \
-    .format("console") \
-    .start()
-
-# query.awaitTermination()
-
-
-# def write_to_influx(df, epoch_id):
-#     # Code to create a connection to InfluxDB
-#     # Convert iterator to DataFrame or use it as is
-#     if df.rdd.isEmpty():
-#         return
-
-#     pandas_df = df.toPandas()
-#     influxdb_url = "http://influxdb:8086"  # Adjust if needed
-#     # Replace with your InfluxDB token
-#     token = 'FeerqBQF5LSSZUv5wRmbK_7O8rZCsL7OEgTIdGOYM-VeT2jqygd1_rSRcfKzqlxOLLWGx---1l6TaidJcKumPw=='
-#     org = 'indonesia'  # Replace with your InfluxDB organization
-#     bucket = 'bucket-wido'  # Replace with your InfluxDB bucket
-
-#     # Establish a connection to InfluxDB
-#     client = InfluxDBClient(url=influxdb_url, token=token, org=org)
-#     write_api = client.write_api(write_options=SYNCHRONOUS)
-
-#     for index, row in pandas_df.iterrows():
-#         # Replace with your measurement name
-#         dataPoint = Point("classification")
-
-#         # Add tags and fields from row
-#         for key, value in row.items():
-#             if key != "timestamp":
-#                 dataPoint.field(key, value)
-
-#         # Write data point to InfluxDB
-#         write_api.write(bucket=bucket, record=dataPoint)
-
-#     client.close()
+def print_ae():
+  print("ASU COK")
 
 
 # query = result_df.writeStream \
-#     .foreachBatch(write_to_influx) \
-#     .outputMode("update") \
-#     .option("checkpointLocation", "/checkpoint") \
+#     .foreach(print_ae) \
+#     .outputMode("append") \
+#     .format("console") \
 #     .start()
+
+# query.awaitTermination()
+
+def write_to_influx(df, epoch_id):
+    try:
+        if df.rdd.isEmpty():
+            logging.info("DataFrame is empty. Nothing to write.")
+            return
+
+        pandas_df = df.toPandas()
+        influxdb_url = "http://influxdb:8086"
+        token = '3ftZXSzNSi-sWCZzCAniAURTlq7qhX3F9HnEJ49Pw1VDpylIEQ3NgFU_U98wkujI1EF2vdLssVKJGGctM3fbDQ=='
+        org = 'Smart Home Water Management System'
+        bucket = 'smart_home'
+
+        client = InfluxDBClient(url=influxdb_url, token=token, org=org)
+        write_api = client.write_api(write_options=SYNCHRONOUS)
+
+        for index, row in pandas_df.iterrows():
+            data_point = Point("classification")
+
+            # Add tags and fields from row
+            for key, value in row.items():
+                if key != "timestamp":
+                    data_point.field(key, value)
+
+            # Write data point to InfluxDB
+            write_api.write(bucket=bucket, record=data_point)
+
+        client.close()
+        logging.info("Data successfully written to InfluxDB.")
+    except Exception as e:
+        logging.error(f"Error writing data to InfluxDB: {e}")
+        raise
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+
+# Your existing Spark Streaming code...
+
+query = result_df.writeStream \
+    .foreachBatch(write_to_influx) \
+    .outputMode("update") \
+    .option("checkpointLocation", "/checkpoint") \
+    .start()
 
 query.awaitTermination()

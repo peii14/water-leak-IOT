@@ -9,35 +9,34 @@ import Button from '@/_components/shared/buttons/Button';
 import Input from '@/_components/shared/forms/Input';
 import api from '@/_lib/axios';
 
-type FacultyFormSubmit = {
-  name: string;
+type LimitFormProps = {
+  limit: number;
 };
 
-export default function FacultyAdminForm({ refetch }: { refetch: () => void }) {
+export default function LimitForm() {
   // #region //* =========== Form ===========
-  const methods = useForm<FacultyFormSubmit>({
+  const methods = useForm<LimitFormProps>({
     mode: 'onTouched',
   });
   const { handleSubmit, reset } = methods;
   //#endregion  //*======== Form ===========
   //#region  //*=========== Form Submit ===========
-  const onSubmit: SubmitHandler<FacultyFormSubmit> = (data) => {
+  const onSubmit: SubmitHandler<LimitFormProps> = (data) => {
     mutate(data);
   };
-  const postNewsletter = async (data: FacultyFormSubmit) => {
-    const res = await api.post('/master/faculty', data);
+  const postSensorLimit = async (data: LimitFormProps) => {
+    const res = await api.post('/sensor/set-limit', data);
     if (typeof res === 'undefined') {
       toast.error('Something went wrong');
       return res;
     }
   };
   const mutation = useMutation({
-    mutationFn: postNewsletter,
+    mutationFn: postSensorLimit,
 
     onSuccess: () => {
-      refetch();
       toast.dismiss();
-      toast.success('Added new faculty successfully');
+      toast.success('Set new threshold successfully');
       reset();
     },
     onError: (error: Error) => {
@@ -55,8 +54,9 @@ export default function FacultyAdminForm({ refetch }: { refetch: () => void }) {
       <form onSubmit={handleSubmit(onSubmit)}>
         <Input
           id='name'
-          label='Faculty Name'
-          validation={{ required: 'Faculty must be filled' }}
+          label='Limit'
+          style={{ width: '50%' }}
+          validation={{ required: 'Limit must be filled' }}
         />
         <Button
           type='submit'
@@ -64,7 +64,7 @@ export default function FacultyAdminForm({ refetch }: { refetch: () => void }) {
           variant='primary'
           className='mt-5'
         >
-          Submit
+          Set Limit
         </Button>
       </form>
     </FormProvider>

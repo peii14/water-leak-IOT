@@ -1,23 +1,5 @@
 {
   "pages": {
-    "/login/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/css/app/login/layout.css",
-      "static/chunks/app/login/layout.js"
-    ],
-    "/login/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/css/app/login/page.css",
-      "static/chunks/app/login/page.js"
-    ],
-    "/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/css/app/layout.css",
-      "static/chunks/app/layout.js"
-    ],
     "/error": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -28,23 +10,23 @@
       "static/chunks/main-app.js",
       "static/chunks/app/not-found.js"
     ],
+    "/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/layout.css",
+      "static/chunks/app/layout.js"
+    ],
     "/(univ-admin)/admin/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/css/app/(univ-admin)/admin/layout.css",
       "static/chunks/app/(univ-admin)/admin/layout.js"
     ],
-    "/(univ-admin)/admin/account/page": [
+    "/(univ-admin)/admin/tips/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/css/app/(univ-admin)/admin/account/page.css",
-      "static/chunks/app/(univ-admin)/admin/account/page.js"
-    ],
-    "/(univ-admin)/admin/sensor/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/css/app/(univ-admin)/admin/sensor/page.css",
-      "static/chunks/app/(univ-admin)/admin/sensor/page.js"
+      "static/css/app/(univ-admin)/admin/tips/page.css",
+      "static/chunks/app/(univ-admin)/admin/tips/page.js"
     ]
   }
 }
