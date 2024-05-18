@@ -1,0 +1,4 @@
+})
+roles: [ { role: 'root', db: "admin" } ]
+pwd: "admin",
+user: "admin",

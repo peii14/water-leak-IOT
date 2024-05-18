@@ -1,4 +1,4 @@
-// File: /Users/yasabh/water-leak-IOT/dashboard/src/app/api/auth/[...nextauth]/route.ts
+// File: /Users/gayuhkautaman/Developer/datastream/water-leak-IOT/dashboard/src/app/api/auth/[...nextauth]/route.ts
 import * as entry from '../../../../../../src/app/api/auth/[...nextauth]/route.js'
 import type { NextRequest } from 'next/server.js'
 

@@ -2,10 +2,12 @@ import {
   internalServerErrorResponse,
   successResponse,
 } from "@/_lib/apiHelpers";
+import logger from "@/_lib/logger";
 import { MongoClient } from "mongodb";
 
 export async function GET() {
   try {
+    logger("GET /api/sensors");
     const uri = "mongodb://admin:admin@localhost:27017";
 
     const client = new MongoClient(uri);

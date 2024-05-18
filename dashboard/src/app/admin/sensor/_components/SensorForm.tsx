@@ -1,33 +1,37 @@
-'use client';
+"use client";
 
-import { useMutation } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
-import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
-import toast from 'react-hot-toast';
+import { useMutation } from "@tanstack/react-query";
+import { Plus } from "lucide-react";
+import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 
-import Button from '@/_components/shared/buttons/Button';
-import Input from '@/_components/shared/forms/Input';
-import api from '@/_lib/axios';
+import Button from "@/_components/shared/buttons/Button";
+import Input from "@/_components/shared/forms/Input";
+import api from "@/_lib/axios";
 
 type LimitFormProps = {
   limit: number;
 };
 
-export default function LimitForm() {
+export default function LimitForm({ refetch }: { refetch: () => void }) {
   // #region //* =========== Form ===========
   const methods = useForm<LimitFormProps>({
-    mode: 'onTouched',
+    mode: "onTouched",
   });
   const { handleSubmit, reset } = methods;
   //#endregion  //*======== Form ===========
   //#region  //*=========== Form Submit ===========
   const onSubmit: SubmitHandler<LimitFormProps> = (data) => {
-    mutate(data);
+    const dataToSend = {
+      limit: data.limit,
+      id: 1,
+    };
+    mutate(dataToSend);
   };
   const postSensorLimit = async (data: LimitFormProps) => {
-    const res = await api.post('/sensor/set-limit', data);
-    if (typeof res === 'undefined') {
-      toast.error('Something went wrong');
+    const res = await api.put("/limit", data);
+    if (typeof res === "undefined") {
+      toast.error("Something went wrong");
       return res;
     }
   };
@@ -36,7 +40,8 @@ export default function LimitForm() {
 
     onSuccess: () => {
       toast.dismiss();
-      toast.success('Set new threshold successfully');
+      toast.success("Set new threshold successfully");
+      refetch();
       reset();
     },
     onError: (error: Error) => {
@@ -44,7 +49,7 @@ export default function LimitForm() {
       toast.error(error.message);
     },
     onMutate: () => {
-      toast.loading('Processing...');
+      toast.loading("Processing...");
     },
   });
   const { mutate } = mutation;
@@ -53,16 +58,16 @@ export default function LimitForm() {
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Input
-          id='name'
-          label='Limit'
-          style={{ width: '50%' }}
-          validation={{ required: 'Limit must be filled' }}
+          id="limit"
+          label="Limit"
+          style={{ width: "50%" }}
+          validation={{ required: "Limit must be filled" }}
         />
         <Button
-          type='submit'
+          type="submit"
           rightIcon={Plus}
-          variant='primary'
-          className='mt-5'
+          variant="primary"
+          className="mt-5"
         >
           Set Limit
         </Button>

@@ -13,7 +13,6 @@ interface DataPoint {
 
 export default function SensorsChart() {
   const { data, isLoading } = useDataStream();
-  logger(data);
 
   const primaryAxis = React.useMemo<AxisOptions<DataPoint>>(
     () => ({
@@ -58,8 +57,8 @@ export default function SensorsChart() {
 
   return (
     <>
-      {isLoading ? (
-        <Skeleton className="h-[50vh] w-full" />
+      {isLoading  ? (
+        <Skeleton className="h-full w-full rounded-xl" />
       ) : (
         <Chart<DataPoint>
           options={{

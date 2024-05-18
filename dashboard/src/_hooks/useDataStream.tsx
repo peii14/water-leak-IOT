@@ -1,5 +1,4 @@
 import api from "@/_lib/axios";
-import logger from "@/_lib/logger";
 import { SensorsProps } from "@/_types/entity/sensors";
 import { useQuery } from "@tanstack/react-query";
 import React from "react";
@@ -18,7 +17,7 @@ function useDataStream() {
 
   const transformedData = React.useMemo(() => {
     return (
-      data?.map((datum, index) => ({
+      data?.map((datum) => ({
         primary: new Date(datum.timestamp),
         secondary: Number(datum.x1003_24_SUM_OUT) * 1000,
         classification: datum.classification,
