@@ -23,7 +23,7 @@ async function main() {
   // #region -------------- create user ----------------
   await prisma.users.create({
     data: {
-      username: "kontol",
+      username: "John",
       name: "John Doe",
       email: "john.doe@example.com",
       role_id: universityAdminRoleId,
